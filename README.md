@@ -1,8 +1,31 @@
 # flutter_simple_websocket
 This is a simplified and easy to use websocket communication version, suitable for many business scenarios, only a few lines of code can set up their own websocket server and client side, easy to embed in their own projects, automatic code generation of core classes.
 
+
+# 使用前说明
+* 针对type = "MESSAGE" 类型，采用系统自定义的规则进行，因此如果您要使用该消息类型处理系统，则您需要遵守该MESSAGE消息处理系统的规则
+* 如果您 type 消息类型不采用MESSAGE处理系统，您将拥有完全自定义的新消息类型构建权限，开发自由度灵活性更高，具体涵盖从接受消息的解码实现、解码后消息的业务逻辑处理、加密算法实现与消息的发送等更多自由度。
+* 如何您需要开发如聊天系统，推荐采用消息类型为MESSAGE的处理系统，这样省去您代码的重构等麻烦。
+* 如果您需要完全掌握整个执行流程，不推荐MESSAGE类型消息处理系统来开发。
+* 如果您觉得该项目在性能或需求上不满足您，您可以在了解代码继承逻辑后对该项目进行二次开发。
+
 # 类关系图
 
+
+# 使用规则介绍
+分为：MESSAGE消息类型系统和非MESSAGE消息类型自定义处理系统
+
+## MESSAGE消息类型系统
+
+## 非MESSAGE消息类型自定义处理系统
+
+# 使用说明
+您只需要将该项目的覆盖在您的项目即可，主要保留bin、microService目录。
+* 克隆
+   ```git clone https://github.com/gnu-xiaosong/flutter_simple_websocket ```
+* dart package包安装：由于部分原因，我的dart上传不了，等后期解决后。您就可以用pub工具便捷安装了
+
+tip: 更加推荐第一种克隆方式，这样您可以方便重构修改源代码
 
 
 # 模块
