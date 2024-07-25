@@ -1,7 +1,7 @@
 name: flutter_simple_websocket
-description: "A new Flutter package project."
+description: "This is a simplified and easy to use websocket communication version, suitable for many business scenarios, only a few lines of code can set up their own websocket server and client side, easy to embed in their own projects, automatic code generation of core classes."
 version: 0.0.1
-homepage:
+homepage: https://github.com/gnu-xiaosong/flutter_simple_websocket
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
@@ -9,9 +9,11 @@ environment:
 
 dependencies:
   chalkdart: ^2.2.1
+  crypto: ^3.0.3
   device_info_plus: ^9.1.2
   flutter:
     sdk: flutter
+  path: ^1.8.3
   uuid: ^4.4.2
   web_socket_channel: ^2.4.0
 
