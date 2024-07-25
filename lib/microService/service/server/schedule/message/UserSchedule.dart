@@ -1,8 +1,8 @@
 /*
   user 级别任务调度
  */
-import '../../../module/manager/GlobalManager.dart';
-import '../model/ClientObject.dart';
+import '../../../../module/manager/GlobalManager.dart';
+import '../../model/ClientObject.dart';
 
 class UserSchedule {
   // 单例实例

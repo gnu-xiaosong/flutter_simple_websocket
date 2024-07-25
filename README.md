@@ -9,6 +9,42 @@ This is a simplified and easy to use websocket communication version, suitable f
 * 如果您需要完全掌握整个执行流程，不推荐MESSAGE类型消息处理系统来开发。
 * 如果您觉得该项目在性能或需求上不满足您，您可以在了解代码继承逻辑后对该项目进行二次开发。
 
+# 项目结构
+
+```markdown
+├─bin
+│  ├─genOtherClientMsgTypeClass.dart    自动代码生成类:OtherMsgType
+│  └─genOtherServerMsgTypeClass.dart    自动代码生成类:OtherClientMsgType
+├─lib
+│  └─microService        微服务
+│      ├─module			 公共
+│      │  ├─common      公共功能
+│      │  ├─encryption  加解密算法
+│      │  ├─manager     管理器
+│      │  ├─model       实体模型
+│      │  ├─module      模块
+│      │  └─websocket   websocket目录
+│      └─service         服务功能目录
+│          ├─client         客户端client
+│          │  ├─common     自动代码生成类文件会存放该目录
+│          │  ├─model
+│          │  ├─module
+│          │  ├─schedule   调度任务: 主要处理各种消息类型的调度发送
+│          │  ├─transmit   代理中转目录（包括消息转发等)分为server端和client端转发 推荐server转发 
+│          │  └─websocket
+│          │      └─messageByTypeHandler   用户自定义消息类型处理类目录
+│          └─server         服务端server
+│              ├─common        自动代码生成类文件会存放该目录
+│              ├─model
+│              ├─module
+│              ├─schedule       调度任务: 主要处理各种消息类型的调度发送
+│              │  └─message       message消息类型处理系统的消息调度
+│              ├─transmit       代理中转目录（包括消息转发等) 待开发 推荐server转发
+│              └─websocket
+│                  └─messageByTypeHandler  用户自定义消息类型处理类目录
+└─test                         测试
+```
+
 # 类关系图
 
 
@@ -17,7 +53,11 @@ This is a simplified and easy to use websocket communication version, suitable f
 
 ## MESSAGE消息类型系统
 
+#### 运行逻辑图
+
 ## 非MESSAGE消息类型自定义处理系统
+
+#### 运行逻辑图
 
 # 使用说明
 您只需要将该项目的覆盖在您的项目即可，主要保留bin、microService目录。
@@ -210,4 +250,56 @@ printError("whenClientError: ${errorObject}");
 // 连接
 websocketClientManager.conn();
 ```
+
+# 代理转发系统transmit
+
+#### 代理转发类别方案
+
+- **server端代理转发**： 因为不需要修改太多，按照既定client与server传输消息规则即可，因此**比较推荐**。这样也能降低客户端client的能耗。**半完全的去中心化**。**client单职能，server双职能**
+
+  ![image-20240726031814490](project/README/image-20240726031814490.png)
+
+- **client端代理转发**：这样会让同一个client端同时连接两个server系统。**半完全的去中心化**。server单职能，client双职能。会**加重client端的负担**。
+
+  ![image-20240726032259282](project/README/image-20240726032259282.png)
+
+- **完全去中心化（无实际意义的server端）**: **client设备 = server端 + client端**   ，更加偏向于网络化消息传递。缺点：增加client设备的负担，client联通网络， 关键在于如何构建联通网络， 分枝式网络一处异常断开连接会造成后续设备无法正常接受。解决办法构建起互通直达式联通网络。
+
+  ![image-20240726033549735](project/README/image-20240726033549735.png)
+
+  
+
+  **网络结构**
+
+  ![image-20240726034758591](project/README/image-20240726034758591.png)
+
+![image-20240726035332849](project/README/image-20240726035332849.png)
+
+**树枝式网络解决办法：动态树枝式网络**，目标：`**已达到接近端到端的通讯目标，实现真正的去中心化**`
+
+![image-20240726035610536](project/README/image-20240726035610536.png)
+
+
+
+![image-20240726035823638](project/README/image-20240726035823638.png)
+
+**综上所述：**方案三最优，更加接近**端到端通讯**，因为端到端通讯具有**中继节点少**，传输相对快，**数据保障与传输更加安全**。
+
+但也有难点和缺点：在寻找最优有**通讯网络耗时**。
+
+最大的技术难点在于，目前**通讯技术很难实现**，**只能尽可能的减少中继节点**。
+
+两台设备可能不处于同一个网络中，所以**设备与设备无法正真意义上的端到端通讯传播。也不便于审查**。
+
+
+
+
+
+
+
+
+
+
+
+
 

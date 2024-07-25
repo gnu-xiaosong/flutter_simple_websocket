@@ -1,7 +1,7 @@
 /*
   离线消息队列处理类: 客户端
  */
-import '../../../module/common/Console.dart';
+import '../../../../module/common/Console.dart';
 import 'OffLineHandler.dart';
 
 class WaitAgreeUserAddClientHandler with Console {

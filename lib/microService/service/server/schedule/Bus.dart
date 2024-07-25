@@ -3,7 +3,7 @@
  */
 import '../../../module/manager/GlobalManager.dart';
 import '../model/ClientObject.dart';
-import 'UserSchedule.dart';
+import 'message/UserSchedule.dart';
 
 class BusSchedule {
   // 私有的命名构造函数

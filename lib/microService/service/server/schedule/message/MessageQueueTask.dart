@@ -6,12 +6,12 @@ import 'dart:collection';
 import 'dart:convert';
 import 'package:flutter_simple_websocket/microService/module/encryption/MessageEncrypte.dart';
 
-import '../../../module/common/Console.dart';
-import '../../../module/common/tools.dart';
-import '../../../module/manager/GlobalManager.dart';
-import '../../client/common/tool.dart';
+import '../../../../module/common/Console.dart';
+import '../../../../module/common/tools.dart';
+import '../../../../module/manager/GlobalManager.dart';
+import '../../../client/common/tool.dart';
 import 'OffLineHandler.dart';
-import '../../../service/server/model/ClientObject.dart';
+import '../../model/ClientObject.dart';
 
 class MessageQueueTask extends MessageEncrypte
     with Console, CommonTool, ClientTool {

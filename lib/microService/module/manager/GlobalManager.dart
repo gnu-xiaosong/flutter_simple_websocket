@@ -9,7 +9,7 @@ import 'dart:async';
 import '../../service/server/model/ClientObject.dart';
 import '../../service/server/module/MessageQueue.dart';
 import '../../service/server/module/OffLineMessageQueue.dart';
-import '../../service/server/schedule/UserSchedule.dart';
+import '../../service/server/schedule/message/UserSchedule.dart';
 
 class GlobalManager {
   /***************↓↓↓↓↓↓全局参数变量初始化操作↓↓↓↓↓↓↓******************/

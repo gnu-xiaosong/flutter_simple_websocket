@@ -6,12 +6,12 @@ import 'dart:convert';
 
 import 'package:flutter_simple_websocket/microService/module/encryption/MessageEncrypte.dart';
 
-import '../../../module/common/Console.dart';
-import '../../../module/common/tools.dart';
-import '../../../module/common/unique_device_id.dart';
-import '../../../module/manager/GlobalManager.dart';
-import '../../client/common/tool.dart';
-import '../model/ClientObject.dart';
+import '../../../../module/common/Console.dart';
+import '../../../../module/common/tools.dart';
+import '../../../../module/common/unique_device_id.dart';
+import '../../../../module/manager/GlobalManager.dart';
+import '../../../client/common/tool.dart';
+import '../../model/ClientObject.dart';
 
 class OffLine extends MessageEncrypte with Console, CommonTool, ClientTool {
   // 离线消息队列开关

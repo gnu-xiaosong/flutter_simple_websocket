@@ -6,7 +6,7 @@ import 'dart:io';
 import '../../../../module/manager/GlobalManager.dart';
 import '../../../client/common/OtherClientMsgType.dart';
 import '../../model/ClientObject.dart';
-import '../../schedule/OffLineHandler.dart';
+import '../../schedule/message/OffLineHandler.dart';
 import 'TypeMessageServerHandler.dart';
 
 class AuthTypeMessageHandler extends TypeMessageServerHandler {
