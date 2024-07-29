@@ -6,7 +6,7 @@
  * @Description: 全局管理器工具类
  */
 import 'dart:async';
-import '../../service/server/model/ClientObject.dart';
+import '../../service/server/model/ClientModel.dart';
 import '../../service/server/module/MessageQueue.dart';
 import '../../service/server/module/OffLineMessageQueue.dart';
 import '../../service/server/schedule/message/UserSchedule.dart';
@@ -14,10 +14,10 @@ import '../../service/server/schedule/message/UserSchedule.dart';
 class GlobalManager {
   /***************↓↓↓↓↓↓全局参数变量初始化操作↓↓↓↓↓↓↓******************/
   // 1.全局存储在线的websocket client客户端
-  static List<ClientObject> onlineClientList = [];
+  static List<ClientModel> onlineClientList = [];
 
   // 2.全局存储启动期间连接过的client客户端: 包括断线离线的
-  static List<ClientObject> allConnectedClientList = [];
+  static List<ClientModel> allConnectedClientList = [];
 
   // 3.全局离线消息队列初始初
   static OffLineMessageQueue offLineMessageQueue = OffLineMessageQueue();

@@ -5,7 +5,7 @@ void main() async {
   final directoryPath =
       './lib/microService/service/server/websocket/messageByTypeHandler'; // 指定你的目录
   final outputFilePath =
-      './lib/microService/service/server/common/OtherMsgType.dart'; // 生成代码的文件路径
+      './lib/microService/service/server/common/CommunicationTypeServerModulator.dart'; // 生成代码的文件路径
 
   // 获取所有 Dart 文件
   final files = _getDartFiles(directoryPath);
@@ -54,7 +54,19 @@ Map<String, dynamic> msgTypeByString = {''');
   buffer.writeln('};');
   buffer.writeln();
 
-  buffer.writeln('''class OtherMsgType extends WebSocketServer {
+  // 生成Map通过msgType访问字符
+  buffer.writeln('''// Map访问：通过string访问变量
+Map<dynamic, String> stringByMsgType = {''');
+  for (var className in classNames) {
+    String type = className.toString().replaceAll("TypeMessageHandler", "");
+    type = _addUnderscores(type).toUpperCase();
+    // 枚举与键名相同
+    buffer.writeln(''' MsgType.${type}: "${type}",''');
+  }
+  buffer.writeln('};');
+  buffer.writeln();
+
+  buffer.writeln('''class CommunicationTypeServerModulator{
       List classNames = ${classNames.map((e) => e.toString() + "()").toList()};
       void handler(HttpRequest request, WebSocket webSocket, Map msgDataTypeMap) {
           for (var item in classNames) {

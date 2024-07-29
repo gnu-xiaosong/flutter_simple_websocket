@@ -1,7 +1,7 @@
 /*
 websocket  server与client通讯 自定义消息处理类: TEST消息类型
  */
-import '../../../client/common/OtherClientMsgType.dart';
+import '../../../client/common/CommunicationTypeClientModulator.dart';
 import 'TypeMessageServerHandler.dart';
 
 class TestTypeMessageHandler extends TypeMessageServerHandler {

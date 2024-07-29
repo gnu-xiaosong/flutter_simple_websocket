@@ -2,7 +2,7 @@
 总线调度
  */
 import '../../../module/manager/GlobalManager.dart';
-import '../model/ClientObject.dart';
+import '../model/ClientModel.dart';
 import 'message/UserSchedule.dart';
 
 class BusSchedule {
@@ -20,11 +20,11 @@ class BusSchedule {
   }
 
   // 总线调度：返回WebsocketClientObject对象,单词调用一次message
-  ClientObject? busSchedule() {
+  ClientModel? busSchedule() {
     // 获取横向坐标: 调用userSchedule
     UserSchedule userSchedule = GlobalManager().GlobalUserSchedule;
     // 获取纵向坐标：按时间先后顺序
-    ClientObject? websocketClientObject = userSchedule.getNextClientObject();
+    ClientModel? websocketClientObject = userSchedule.getNextClientObject();
 
     return websocketClientObject;
   }

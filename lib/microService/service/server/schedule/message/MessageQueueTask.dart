@@ -11,7 +11,7 @@ import '../../../../module/common/tools.dart';
 import '../../../../module/manager/GlobalManager.dart';
 import '../../../client/common/tool.dart';
 import 'OffLineHandler.dart';
-import '../../model/ClientObject.dart';
+import '../../model/ClientModel.dart';
 
 class MessageQueueTask extends MessageEncrypte
     with Console, CommonTool, ClientTool {
@@ -42,7 +42,7 @@ class MessageQueueTask extends MessageEncrypte
     while (index < clientCount) {
       printInfo("client index=$index");
       // 获取 调度的clientObj
-      ClientObject? clientObject = GlobalManager.onlineClientList[index];
+      ClientModel? clientObject = GlobalManager.onlineClientList[index];
 
       if (clientObject == null) {
         printWarn("BusSchedule returned a null clientObject");
@@ -76,7 +76,7 @@ class MessageQueueTask extends MessageEncrypte
         String receive_deviceId = msg_map["info"]["recipient"]["id"];
 
         // 3.获取接受者的clientObject
-        ClientObject? receive_clientObject =
+        ClientModel? receive_clientObject =
             getClientObjectByDeviceId(receive_deviceId);
         if (receive_clientObject == null ||
             receive_clientObject.connected == false) {

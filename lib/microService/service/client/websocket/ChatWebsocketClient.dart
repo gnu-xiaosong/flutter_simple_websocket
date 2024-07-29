@@ -1,38 +1,73 @@
 /*
 单例设计： websocketClient
  */
+import 'package:flutter_simple_websocket/flutter_simple_websocket.dart';
+import 'package:flutter_simple_websocket/microService/service/client/module/ClientWebsocketModule.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import '../common/OtherClientMsgType.dart';
+import '../../server/model/ErrorModel.dart';
+import '../common/CommunicationTypeClientModulator.dart';
 
-class ChatWebsocketClient extends OtherClientMsgType {
-  /*
-  client与server连接成功时
-   */
-  @override
-  Future<void> conn_success(WebSocketChannel? channel) async {
-    // 调用
-    super.conn_success(channel);
+class ChatWebsocketClient extends ClientWebsocketModule {
+  WebsocketClientManager websocketClientManager = WebsocketClientManager();
+  CommunicationTypeClientModulator communicationTypeClientModulator =
+      CommunicationTypeClientModulator();
+
+  ChatWebsocketClient(
+      {required String ip, required int port, String type = "ws"}) {
+    // 配置参数
+    websocketClientManager.setConfig(
+        ip: ip,
+        port: port,
+        type: type,
+        initialBeforeConn: initialBeforeConn,
+        whenConnInterrupt: whenConnInterrupt,
+        whenConnSuccessWithServer: whenConnSuccessWithServer,
+        messageHandler: messageHandler,
+        whenClientError: whenClientError);
   }
 
   /*
-  监听消息处理程序
+  在连接server前的初始化操作
    */
-  @override
-  void listenMessageHandler(message) {
-    // 将string重构为Map
-    Map? msgDataTypeMap = stringToMap(message.toString());
-    // 根据不同消息类型处理程序
-    super.handler(channel, msgDataTypeMap!);
-    // 调用
-    super.listenMessageHandler(message);
+  initialBeforeConn(WebsocketClient websocketClient) {
+    print("initial handler");
   }
 
   /*
-  连接中断时
+  当与server连接中断时
    */
-  @override
-  void interruptHandler(WebSocketChannel channel) {
-    // 调用
-    super.interruptHandler(channel);
+  whenConnInterrupt(WebsocketClient websocketClient) {
+    print("conn server is disconnected!");
+  }
+
+  /*
+  当与server端连接成功时
+   */
+  whenConnSuccessWithServer(WebsocketClientManager websocketClientManager) {
+    printSuccess("conn server is successful");
+  }
+
+  /*
+  消息处理程序
+   */
+  messageHandler(WebSocketChannel webSocketChannel, Map message) {
+    print("+message hanlder");
+    // 调用处理程序
+    communicationTypeClientModulator.handler(webSocketChannel, message);
+  }
+
+  /*
+  错误处理程序
+   */
+  whenClientError(ErrorObject errorObject) {
+    print("client error: $errorObject");
+  }
+
+  /*
+  启动连接server
+   */
+  connServer() {
+    print("connecting server.......");
+    websocketClientManager.conn();
   }
 }

@@ -7,6 +7,18 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 
 mixin CommonTool {
+  // 在某个指定字符后插入字符
+  String insertAfterCharacter(
+      String original, String targetChar, String toInsert) {
+    int position = original.indexOf(targetChar);
+    if (position == -1) {
+      throw ArgumentError("Character not found in the string");
+    }
+    return original.substring(0, position + targetChar.length) +
+        toInsert +
+        original.substring(position + targetChar.length);
+  }
+
   Map? stringToMap(String data) {
     // print("------json decode for string to map--------");
     // print("待转string: $data");

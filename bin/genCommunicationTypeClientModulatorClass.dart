@@ -2,10 +2,17 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 void main() async {
+  generateMsgTypehanlderClass();
+}
+
+/*
+生成消息类型处理类文件
+ */
+Future<void> generateMsgTypehanlderClass() async {
   final directoryPath =
       './lib/microService/service/client/websocket/messageByTypeHandler'; // 指定你的目录
   final outputFilePath =
-      './lib/microService/service/client/common/OtherClientMsgType.dart'; // 生成代码的文件路径
+      './lib/microService/service/client/common/CommunicationTypeClientModulator.dart'; // 生成消息类型类存储的文件路径
 
   // 获取所有 Dart 文件
   final files = _getDartFiles(directoryPath);
@@ -55,9 +62,21 @@ Map<String, dynamic> msgTypeByString = {''');
   buffer.writeln('};');
   buffer.writeln();
 
+  // 生成Map通过msgType访问字符
+  buffer.writeln('''// Map访问：通过string访问变量
+Map<dynamic, String> stringByMsgType = {''');
+  for (var className in classNames) {
+    String type = className.toString().replaceAll("TypeMessageHandler", "");
+    type = _addUnderscores(type).toUpperCase();
+    // 枚举与键名相同
+    buffer.writeln(''' MsgType.${type}: "${type}",''');
+  }
+  buffer.writeln('};');
+  buffer.writeln();
+
   // 生成类
 
-  buffer.writeln('''class OtherClientMsgType extends WebsocketClient {
+  buffer.writeln('''class CommunicationTypeClientModulator  {
   List classNames = ${classNames.map((e) => e.toString() + "()").toList()};
   void handler(WebSocketChannel? channel, Map msgDataTypeMap) {
     for (var item in classNames) {
@@ -80,6 +99,57 @@ Map<String, dynamic> msgTypeByString = {''');
   // 写入文件
   await File(outputFilePath).writeAsString(buffer.toString());
   print('代码生成完毕，文件路径：$outputFilePath');
+}
+
+/*
+生成消息类型常量文件
+ */
+Future<void> generateMsgTypeConstant() async {
+  final directoryPath =
+      './lib/microService/service/client/websocket/messageByTypeHandler'; // 指定你的目录
+  final msgTypeFilePath =
+      "./lib/microService/module/common/msgType.dart"; // 生成消息类型常量粗出路径
+
+  // 获取所有 Dart 文件
+  final files = _getDartFiles(directoryPath);
+
+  // 提取类名
+  List classNames = <String>[];
+  for (var file in files) {
+    final fileName =
+        p.basename(file.path).split(".")[0]; // Extract file name from file path
+    if (fileName != "TypeMessageClientHandler") classNames.add(fileName);
+  }
+
+  final buffer = StringBuffer();
+
+  // 生成Map通过String访问变量
+  buffer.writeln('''// Map访问：通过string访问变量
+Map<String, dynamic> msgTypeByString = {''');
+  for (var className in classNames) {
+    String type = className.toString().replaceAll("TypeMessageHandler", "");
+    type = _addUnderscores(type).toUpperCase();
+    // 枚举与键名相同
+    buffer.writeln(''' "${type}": MsgType.${type},''');
+  }
+  buffer.writeln('};');
+  buffer.writeln();
+
+  // 生成Map通过msgType访问字符
+  buffer.writeln('''// Map访问：通过string访问变量
+Map<dynamic, String> stringByMsgType = {''');
+  for (var className in classNames) {
+    String type = className.toString().replaceAll("TypeMessageHandler", "");
+    type = _addUnderscores(type).toUpperCase();
+    // 枚举与键名相同
+    buffer.writeln(''' MsgType.${type}: "${type}",''');
+  }
+  buffer.writeln('};');
+  buffer.writeln();
+  // 写入文件
+  await File(msgTypeFilePath).writeAsString(buffer.toString());
+
+  print('代码生成完毕，文件路径：$msgTypeFilePath ');
 }
 
 List<File> _getDartFiles(String directoryPath) {

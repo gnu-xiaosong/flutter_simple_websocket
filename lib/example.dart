@@ -8,8 +8,8 @@
 import 'dart:io';
 import 'package:flutter_simple_websocket/microService/module/encryption/MessageEncrypte.dart';
 import 'microService/service/client/websocket/WebsocketClientManager.dart';
-import 'microService/service/server/model/ClientObject.dart';
-import 'microService/service/server/model/ErrorObject.dart';
+import 'microService/service/server/model/ClientModel.dart';
+import 'microService/service/server/model/ErrorModel.dart';
 import 'microService/service/server/websocket/WebsocketServerManager.dart';
 import 'microService/module/common/Console.dart';
 import 'microService/module/common/tools.dart';
@@ -44,7 +44,7 @@ class ChatWebsocketManager extends MessageEncrypte with Console, CommonTool {
         port: port,
         whenHasClientConnInterrupt:
             (WebsocketServerManager websocketServerManager,
-                ClientObject clientObject) {
+                ClientModel clientObject) {
           // websocketServerManager  WebsocketServerManager对象
           // clientObject 中断的ClientObject对象
           printError("whenHasClientConnInterrupt: ${clientObject}");
@@ -76,7 +76,10 @@ class ChatWebsocketManager extends MessageEncrypte with Console, CommonTool {
         whenClientError: (ErrorObject errorObject) {
           // errorObject 错误异常ErrorObject对象,聚体枚举参数见ErrorObject类
           printError("whenClientError: ${errorObject}");
-        });
+        },
+        initialBeforeConn: () {},
+        whenConnSuccessWithServer: () {},
+        messageHandler: () {});
     // 连接
     try {
       websocketClientManager.conn();

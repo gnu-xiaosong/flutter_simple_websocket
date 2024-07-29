@@ -5,7 +5,7 @@
 import 'dart:io';
 import '../../service/client/common/tool.dart';
 import '../../service/server/common/tool.dart';
-import '../../service/server/model/ClientObject.dart';
+import '../../service/server/model/ClientModel.dart';
 import '../common/Console.dart';
 import '../common/tools.dart';
 import 'TextEncryption.dart';
@@ -19,7 +19,7 @@ class MessageEncrypte with Console, CommonTool, ClientTool, ServerTool {
   /*
    为map的每一个键值进行加密
    */
-  Map encodeMessage(ClientObject clientObject, Map<String, dynamic> data_map) {
+  Map encodeMessage(ClientModel clientObject, Map<String, dynamic> data_map) {
     return data_map;
     // 加密
     // TextEncryptionForJson textEncryptionForJson = TextEncryptionForJson();
@@ -32,7 +32,7 @@ class MessageEncrypte with Console, CommonTool, ClientTool, ServerTool {
   /*
    为map的每一个键值进行解密
    */
-  Map? decodeMessage(ClientObject clientObject, Map<String, dynamic> data_map) {
+  Map? decodeMessage(ClientModel clientObject, Map<String, dynamic> data_map) {
     return data_map;
     // 加密
     // TextEncryptionForJson textEncryptionForJson = TextEncryptionForJson();
@@ -108,17 +108,33 @@ class MessageEncrypte with Console, CommonTool, ClientTool, ServerTool {
   }
 
   /*
-  客户端client通信秘钥认证
+  确保该客户端client已进行AUTH认证通过
+  客户端client通信秘钥认证：判断该请请求信息是否已认证过，比较ip和port
    */
-  bool clientAuth(String deviceId, HttpRequest request, WebSocket webSocket) {
+  Map clientAuth(String deviceId, HttpRequest request, WebSocket webSocket) {
     // deviceId和ip+port验证
-    ClientObject? clientObject = getClientObjectByDeviceId(deviceId);
+    ClientModel? clientObject = getClientObjectByDeviceId(deviceId);
+    String tip;
+    bool result;
     if (request.connectionInfo?.remoteAddress.address.toString() ==
             clientObject?.ip &&
         request.connectionInfo?.remotePort.toInt() == clientObject?.port) {
-      return true;
+      // 检查该client是否在线
+      if (clientObject?.status == 3) {
+        tip =
+            "This client device is banned! status code=${clientObject?.status}";
+        result = true;
+      } else {
+        tip = "This client is pass for check";
+        result = true;
+      }
+    } else {
+      // 程序异常：该client不在线
+      tip = "this client device is not online";
+      result = false;
     }
-    return false;
+
+    return {"result": result, "tip": tip};
   }
 
   String? encrypte(String data) {

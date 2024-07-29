@@ -6,8 +6,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import '../../../../module/manager/GlobalManager.dart';
-import '../../../client/common/OtherClientMsgType.dart';
-import '../../model/ClientObject.dart';
+import '../../../client/common/CommunicationTypeClientModulator.dart';
+import '../../model/ClientModel.dart';
 import 'TypeMessageServerHandler.dart';
 
 class MessageTypeMessageHandler extends TypeMessageServerHandler {
@@ -19,7 +19,7 @@ class MessageTypeMessageHandler extends TypeMessageServerHandler {
    */
   void handler(HttpRequest request, WebSocket webSocket, Map msgDataTypeMap) {
     // 获取ClientObject
-    ClientObject clientObject = getClientObject(request, webSocket);
+    ClientModel clientObject = getClientObject(request, webSocket);
 
     // 获取秘钥通讯加解密key
     String secret = clientObject.secret.toString();
@@ -35,12 +35,13 @@ class MessageTypeMessageHandler extends TypeMessageServerHandler {
     消息类型
    */
   void message(HttpRequest request, WebSocket webSocket, Map msgDataTypeMap) {
-    // 1.客户端身份验证: deviceId为发送者的设备id
-    bool secret_auth =
-        clientAuth(msgDataTypeMap?["info"]["sender"]["id"], request, webSocket);
+    print("type: MESSAGE");
+    print("receive msg: ${msgDataTypeMap}");
+    // 1.客户端验证检查: deviceId为发送者的设备id，认证该client是否存在于全局在线list ClientObject中
+    Map clientCheck =
+        clientAuth(msgDataTypeMap["info"]["sender"]["id"], request, webSocket);
 
-    printInfo("MESSAGE: $msgDataTypeMap");
-    if (secret_auth) {
+    if (clientCheck["result"]) {
       // 2.如果认证成功，将该消息添加进client的消息队列中
       print("ip: ${request.connectionInfo?.remoteAddress.address}");
       print("length:${GlobalManager.onlineClientList.length}");
@@ -52,10 +53,10 @@ class MessageTypeMessageHandler extends TypeMessageServerHandler {
                 websocketClientObj.ip) {
           printInfo("----------------中断处理：找到了目标websocket----------------");
           // 算法加密
-          msgDataTypeMap?["info"] =
-              encodeMessage(websocketClientObj, msgDataTypeMap?["info"]);
+          msgDataTypeMap["info"] =
+              encodeMessage(websocketClientObj, msgDataTypeMap["info"]);
           //添加新消息进入消息队列中
-          websocketClientObj.messageQueue.enqueue(msgDataTypeMap!);
+          websocketClientObj.messageQueue.enqueue(msgDataTypeMap);
           // 返回
           return websocketClientObj;
         } else {
@@ -64,33 +65,18 @@ class MessageTypeMessageHandler extends TypeMessageServerHandler {
         }
       }).toList();
     } else {
-      // 3.1 认证失败返回数据相应给客户端
+      // 3.1 客户端client检查失败返回数据相应给客户端
       Map re = {
         "type": "AUTH",
-        "info": {"code": 400, "msg": "secret is not pass!"}
+        "info": {"code": 400, "msg": clientCheck["result"]}
       };
       // 加密消息:采用auth加密
       re["info"] = encodeAuth(re["info"]);
 
       print(">> send:$re");
-      // 发送
+      // 发送消息
       webSocket.add(json.encode(re));
-      // 3.2 更改该client的状态
-      GlobalManager.onlineClientList.map((websocketClientObj) {
-        if (websocketClientObj.socket == webSocket ||
-            request.connectionInfo?.remoteAddress.address ==
-                websocketClientObj.ip) {
-          print("----------------中断处理：找到了目标websocket------------------------");
-          //找到了该webSocket,更改属性: 3 为被ban状态
-          websocketClientObj.status = 3;
-          // 返回
-          return websocketClientObj;
-        } else {
-          // 返回原来的
-          return websocketClientObj;
-        }
-      });
-      // 3.3 主动关闭该不信任的client客户端
+      // 主动关闭连接
       webSocket.close();
     }
   }

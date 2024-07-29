@@ -11,7 +11,7 @@ import '../../../../module/common/tools.dart';
 import '../../../../module/common/unique_device_id.dart';
 import '../../../../module/manager/GlobalManager.dart';
 import '../../../client/common/tool.dart';
-import '../../model/ClientObject.dart';
+import '../../model/ClientModel.dart';
 
 class OffLine extends MessageEncrypte with Console, CommonTool, ClientTool {
   // 离线消息队列开关
@@ -38,7 +38,7 @@ class OffLine extends MessageEncrypte with Console, CommonTool, ClientTool {
     // 进入离线消息队列中
     try {
       // 获取clientObject
-      ClientObject? sendClientObject = getClientObjectByDeviceId(deviceId);
+      ClientModel? sendClientObject = getClientObjectByDeviceId(deviceId);
       print("sender:$deviceId");
       if (sendClientObject != null) {
         // 解密
@@ -80,7 +80,7 @@ class OffLine extends MessageEncrypte with Console, CommonTool, ClientTool {
       String secret = await UniqueDeviceId.getDeviceUuid(); // 仅仅离线模式才有该字段，发送者
       printInfo("Offline Msg Type: ${msg?["msg_map"]['type']}");
       // 第一道防护解密: 存储解密
-      ClientObject? sendClientObject = getClientObjectByDeviceId(deviceId);
+      ClientModel? sendClientObject = getClientObjectByDeviceId(deviceId);
       Map? de_map = decodeMessage(sendClientObject!, msg!["msg_map"]["info"]);
 
       printInfo("Content msg: $de_map");
@@ -89,7 +89,7 @@ class OffLine extends MessageEncrypte with Console, CommonTool, ClientTool {
 
       // client为非server端
       /// (2) 根据device获取clientObject对象
-      ClientObject? receive_clientObject =
+      ClientModel? receive_clientObject =
           getClientObjectByDeviceId(receive_deviceId);
       if (receive_clientObject == null) {
         // 如果接受者仍然不在线则将该消息重新添加进队列中

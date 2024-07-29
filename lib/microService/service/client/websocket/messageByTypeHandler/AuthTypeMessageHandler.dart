@@ -2,7 +2,7 @@
 websocket  server与client通讯 自定义消息处理类: TEST消息类型
  */
 import 'package:web_socket_channel/web_socket_channel.dart';
-import '../../../server/common/OtherMsgType.dart';
+import '../../../server/common/CommunicationTypeServerModulator.dart';
 import 'TypeMessageClientHandler.dart';
 
 class AuthTypeMessageHandler extends TypeMessageClientHandler {
@@ -19,6 +19,8 @@ class AuthTypeMessageHandler extends TypeMessageClientHandler {
     客户端client 第一次请求认证服务端server
    */
   void auth(WebSocketChannel? channel, Map msgDataTypeMap) {
+    print("type: AUTH");
+    print("receive msg: ${msgDataTypeMap}");
     // 被动接受消息业务操作
   }
 }

@@ -2,7 +2,7 @@
   user 级别任务调度
  */
 import '../../../../module/manager/GlobalManager.dart';
-import '../../model/ClientObject.dart';
+import '../../model/ClientModel.dart';
 
 class UserSchedule {
   // 单例实例
@@ -23,7 +23,7 @@ class UserSchedule {
   /*
    * 获取下一个 WebsocketClientObject
    */
-  ClientObject? getNextClientObject() {
+  ClientModel? getNextClientObject() {
     print("debug: ${GlobalManager.onlineClientList.length}");
     // 获取横向客户端index:选取策略
     if (GlobalManager.onlineClientList.length == 0) {
@@ -32,7 +32,7 @@ class UserSchedule {
     }
 
     // 获取对象client
-    ClientObject clientObject = GlobalManager.onlineClientList[index];
+    ClientModel clientObject = GlobalManager.onlineClientList[index];
     // 执行调度策略:index+1
     clientScheduleStrategyByOrder();
 

@@ -4,7 +4,7 @@ desc: 这是封装好的websocket客户端
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import '../../../module/common/enum.dart';
-import '../../server/model/ErrorObject.dart';
+import '../../server/model/ErrorModel.dart';
 import '../module/ClientWebsocketModule.dart';
 
 class WebsocketClient extends ClientWebsocketModule {
@@ -20,13 +20,22 @@ class WebsocketClient extends ClientWebsocketModule {
 
   String type = "ws";
 
+  /*
+  连接前的出初始化操作
+   */
+  void initialBeforeConn(WebsocketClient websocketClient) {}
+
   // 连接websocketServer
-  Future<void> connnect() async {
+  void connnect() {
+    // 连接前的出初始化操作
+    initialBeforeConn(this);
     try {
       // 开始连接
-      channel =
-          await WebSocketChannel.connect(Uri.parse("$type://${ip}:${port}"));
-      await channel!.ready;
+      channel = WebSocketChannel.connect(Uri.parse("$type://${ip}:${port}"));
+      channel!.ready;
+      //*****************连接成功回调处理函数*********************
+      printSuccess("this websocket is connected for $type://${ip}:${port}");
+      conn_success(channel);
     } catch (e) {
       print(
           "-WARN:connect is error, this client is interrupted! more detail: $e");
@@ -37,14 +46,12 @@ class WebsocketClient extends ClientWebsocketModule {
       // 关闭连接
       channel!.sink.close(status.goingAway);
     }
-    //*****************连接成功回调处理函数*********************
-    this.conn_success(channel);
 
     // 监听信息
-    await channel!.stream.listen((message) {
+    channel!.stream.listen((message) {
       // print("received: $message");
       // 处理监听信息
-      listenMessageHandler(message);
+      listenMessageHandler(channel!, message);
     }, onError: (e) {
       // 调用异常处理函数
       // 调用异常处理函数
@@ -74,12 +81,10 @@ class WebsocketClient extends ClientWebsocketModule {
       parameters:
           channel  WebSocketChannel  中断的WebSocket
      */
-
-    print("-WAR:$channel is interrupted !");
   }
 
   // 处理监听的信息处理程序
-  void listenMessageHandler(message) {
+  void listenMessageHandler(WebSocketChannel channel, String message) {
     // 发送信息给服务器
     // print("Broadcast: $message");
     // channel!.sink.add(message);
@@ -89,6 +94,7 @@ class WebsocketClient extends ClientWebsocketModule {
 
   // 发送消息
   void send(String message) {
+    print("send msg: ${message}");
     // 发送消息
     channel?.sink.add(message);
   }
@@ -101,10 +107,9 @@ class WebsocketClient extends ClientWebsocketModule {
   }
 
   /*
-    连接成功回调函数
-     */
+  连接成功回调函数
+   */
   void conn_success(WebSocketChannel? channel) {
     // 连接成功可以处理AUTH认证等操作
-    print("-WAR:$channel is connected!");
   }
 }

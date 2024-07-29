@@ -1,51 +1,134 @@
 /*
-单例设计： websocketServer
+基于WebsocketServerManager的chat聊天实现
  */
-
 import 'dart:io';
-import '../../../module/common/Console.dart';
-import '../../../module/common/tools.dart';
-import '../common/OtherMsgType.dart';
 
-class ChatWebsocketServer extends OtherMsgType with Console, CommonTool {
+import 'package:flutter_simple_websocket/microService/service/server/module/ServerWebsocketModule.dart';
+
+import '../../../module/manager/GlobalManager.dart';
+import '../common/CommunicationTypeServerModulator.dart';
+import '../model/ClientModel.dart';
+import '../model/ErrorModel.dart';
+import 'WebsocketServer.dart';
+import 'WebsocketServerManager.dart';
+
+class ChatWebsocketServer extends ServerWebsocketModule {
+  // 实例化WebsocketServerManager
+  WebsocketServerManager websocketServerManager = WebsocketServerManager();
+  CommunicationTypeServerModulator communicationTypeServerModulator =
+      CommunicationTypeServerModulator();
+  ChatWebsocketServer({String ip = '127.0.0.1', int port = 1314}) {
+    // 调用配置参数函数
+    websocketServerManager.setConfig(
+        // server绑定ip地址
+        ip: InternetAddress(ip),
+        // server绑定端口port
+        port: port,
+        //******配置周期性回调函数***********
+        // 1.启动前的初始化操作
+        initial: initial,
+        // 2.当server绑定地址成功后调用
+        whenServerBindAddrSuccess: whenServerBindAddrSuccess,
+        // 3.当client连接成功时调用
+        whenClientConnSuccess: whenClientConnSuccess,
+        // 4.当存在client断开与server连接时调用
+        whenHasClientConnInterrupt: whenHasClientConnInterrupt,
+        // 5.当出现异常或错误时调用：错误类型见ErrorType枚举类型
+        whenServerError: whenServerError,
+        // 消息处理调用
+        handlerMessage: handlerMessage);
+  }
+
+  //******配置周期性回调函数***********
   /*
-  处理客户端断开连接
+  1.启动前的初始化操作
    */
-  @override
-  void interruptHandler(HttpRequest request, WebSocket webSocket) {
-    super.interruptHandler(request, webSocket);
+  initial(WebSocketServer webSocketServer) {
+    print("initial handler");
   }
 
   /*
-    处理接受到的消息
+   2.当server绑定地址成功后调用
    */
-  @override
-  void messageHandler(
-      HttpRequest request, WebSocket webSocket, dynamic message) {
-    // 将string重构为Map
-    Map? msgDataTypeMap = stringToMap(message.toString());
-    // 这里采用分层层级式处理监听的消息： 每一层逻辑单独
-    /*
-   针对待处理的其它层的逻辑开发: 由于不同消息类型处理层1，本身为该执行区块，因此
-   因此推荐用户如果有其他业务逻辑需求时，不需要再此添加其它层, 采用super.handler处理不同消息类型进行开发
-   如果不满足特别需求，可以采用继承该类，然后对该方法进行重写
-   例子：
-   class CustomWebsocket extends ChatWebsocketServer {
-        @override
-        void messageHandler(
-            HttpRequest request, WebSocket webSocket, dynamic message){
-         // 不影响其他逻辑，记得
-         super.messageHandler(
-            HttpRequest request, WebSocket webSocket, dynamic message);
+  whenServerBindAddrSuccess(WebSocketServer webSocketServer) {
+    print("bind addr is successful to handler");
+  }
 
-         // ................其它层逻辑开发.........
-        }
-   }
-    */
+  /*
+   3.当client连接成功时调用
+   */
+  whenClientConnSuccess(HttpRequest request, WebSocket webSocket) {
+    print("client connect is successful ");
+    // 添加进全局变量中
+    /// 1.封装clientObject对象
+    ClientModel clientObject = ClientModel(
+      // deviceId: null, // 唯一标识符: 该
+      socket: webSocket, // socket对象
+      ip: request.connectionInfo!.remoteAddress.address
+          .toString(), // 客户端client ip
+      port: request.connectionInfo!.remotePort.toInt(),
+      retryConnCount: 0, // 客户端client port
+      // secret: secret // 认证秘钥
+    );
+    GlobalManager.onlineClientList.add(clientObject); // 添加进在线全局变量中
+    GlobalManager.allConnectedClientList
+        .add(clientObject); // 运行期间添加进存在过连接的所有client客户端对象
+  }
 
-    // 1.必要层级: 调用不同消息类型处理  ——> 继承自OtherMsgType类中的handler方法
-    super.handler(request, webSocket, msgDataTypeMap!);
+  /*
+   4.当存在client断开与server连接时调用
+   */
+  whenHasClientConnInterrupt(HttpRequest request, WebSocket webSocket) {
+    //****************连接中断处理逻辑**************
+    // 客户端信息
+    String? ip = request.connectionInfo?.remoteAddress.address.toString();
+    int? port = request.connectionInfo?.remotePort.toInt();
+    GlobalManager.onlineClientList.removeWhere((clientObject) =>
+        clientObject.socket == webSocket ||
+        (clientObject.ip == ip && clientObject.port == port)); //在线连接
+    GlobalManager.allConnectedClientList =
+        GlobalManager.allConnectedClientList.map((clientObject) {
+      // 找出对应存储的client
+      if (clientObject.socket == webSocket) {
+        // 更改信息
+        clientObject..connected = false;
+        // 增加断线重连次数
+        clientObject.retryConnCount += 1;
+        // 更改最近一次断线时间
+        clientObject.disconnRecentTime = DateTime.now();
+        // 消息队列依然保存，作为离线存储未接受消息
 
-    // 2.其他待拓展层......
+        return clientObject;
+      }
+
+      return clientObject;
+    }).toList();
+  }
+
+  /*
+   5.当出现异常或错误时调用：错误类型见ErrorType枚举类型
+   */
+  whenServerError(WebSocketServer webSocketServer, ErrorObject errorObject) {
+    print("exist server error ");
+  }
+
+  /*
+   消息处理调用
+   */
+  handlerMessage(HttpRequest request, WebSocket webSocket, Map message) {
+    print("+message handler");
+
+    // 第一层处理:调用调制器函数处理事先定义好的不同类型消息处理类
+    communicationTypeServerModulator.handler(request, webSocket, message);
+
+    // 第二层处理
+  }
+
+  /*
+  启动server
+   */
+  bootServer() {
+    print("start boot server service.....");
+    websocketServerManager.boot();
   }
 }

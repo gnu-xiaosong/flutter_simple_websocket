@@ -48,12 +48,69 @@ This is a simplified and easy to use websocket communication version, suitable f
 # 类关系图
 
 
+
+
 # 使用规则介绍
 分为：MESSAGE消息类型系统和非MESSAGE消息类型自定义处理系统
 
 ## MESSAGE消息类型系统
 
+:warning:在初次进行MESSAGE类型消息传输前，一定要先进行AUTH认证，通过之后再进行通讯，否则会异常！
+
 #### 运行逻辑图
+
+
+
+
+
+**传输消息json**：在client与server之间传递信息的格式要满足如下要求
+
+> 概述：因为该系统主要用sender和recipient的唯一标识符id以及messageId来标识双方websocket信息，来操作执行。
+
+* 格式： json  转为为字符串进行传输
+
+* json字段：
+
+  ```json
+  {
+      "type": "MESSAGE",  // 消息类型，与消息枚举相同，不区分字母大小写，MESSAGE = Message =.... =message  该字段不加密
+      "info": {  
+          "msgType": "text", // 消息类型: text,file,link......
+          "sender": {  // 发送者
+              "id": "user123",// 设备唯一标识：必须唯一，可以为用户名等，只要唯一即可
+              "username": "Alice",// 发送者用户名
+              "role":  "角色", // admin(管理员), agent(坐席), moderator(版主), user(用户)
+              "avatar": "avatar.jpg" // 发送者头像（可选）
+          },
+          "recipient": { // 接受者
+              "id": "all", // 设备唯一标识必须唯一，可以为用户名等，只要唯一即可
+              "type": "group" // 接收者类型，例如 group 表示群组消息，user 表示私聊消息
+          },
+          "content": { // 文本: 
+              "text": "Hello, World!", // 文本消息内容
+              "attachments": [ // 附件列表，如图片、文件等（可选）
+                  {
+                      "type": "image", // 文件类型
+                      "url": "https://example.com/image.jpg", // 附件链接
+                      "name": "image.jpg"   //附件名
+                  }]
+          },
+          "timestamp": "2024-06-14T15:30:00Z", // 发送时间： string 时间格式
+          "metadata": {  // 消息元: 用户可以自定义的字段信息
+              "messageId": "msg123", // 该消息的唯一标识符：系统回自动生成，或者自己实现必须唯一
+              "status": "sent" // 消息状态，例如 sending(正在发送), sent(发送成功，已送达对方), delivered(已送达server端，但未送达对方), read(对方已查阅)
+          }
+      }
+  }
+  ```
+
+  > 注意：以上字段在某种**严格意义上的都不是必要字段**，因为MESSAGE类型消息系统也是基于**独立类实现**的（存放于messageByTypeHandler目录中)，所以你可以随意增删改查字段信息。单**type字段必须存在**。
+
+  
+
+
+
+
 
 ## 非MESSAGE消息类型自定义处理系统
 
@@ -253,6 +310,8 @@ websocketClientManager.conn();
 
 # 代理转发系统transmit
 
+![image-20240726041754672](project/README/image-20240726041754672.png)
+
 #### 代理转发类别方案
 
 - **server端代理转发**： 因为不需要修改太多，按照既定client与server传输消息规则即可，因此**比较推荐**。这样也能降低客户端client的能耗。**半完全的去中心化**。**client单职能，server双职能**
@@ -264,6 +323,8 @@ websocketClientManager.conn();
   ![image-20240726032259282](project/README/image-20240726032259282.png)
 
 - **完全去中心化（无实际意义的server端）**: **client设备 = server端 + client端**   ，更加偏向于网络化消息传递。缺点：增加client设备的负担，client联通网络， 关键在于如何构建联通网络， 分枝式网络一处异常断开连接会造成后续设备无法正常接受。解决办法构建起互通直达式联通网络。
+
+  > **开发重点**：开发一个直接转发的系统，不需要考虑两个client与server的websocket之间信息交流的问题，该系统来解决这个问题，用户只需要调用即可。
 
   ![image-20240726033549735](project/README/image-20240726033549735.png)
 

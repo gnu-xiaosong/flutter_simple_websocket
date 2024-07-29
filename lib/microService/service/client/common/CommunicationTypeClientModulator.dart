@@ -17,7 +17,14 @@ Map<String, dynamic> msgTypeByString = {
  "TEST": MsgType.TEST,
 };
 
-class OtherClientMsgType extends WebsocketClient {
+// Map访问：通过string访问变量
+Map<dynamic, String> stringByMsgType = {
+ MsgType.AUTH: "AUTH",
+ MsgType.MESSAGE: "MESSAGE",
+ MsgType.TEST: "TEST",
+};
+
+class CommunicationTypeClientModulator  {
   List classNames = [AuthTypeMessageHandler(), MessageTypeMessageHandler(), TestTypeMessageHandler()];
   void handler(WebSocketChannel? channel, Map msgDataTypeMap) {
     for (var item in classNames) {

@@ -2,14 +2,11 @@
 管理websocketServer
  */
 import 'dart:io';
-import 'package:flutter_simple_websocket/microService/module/manager/GlobalManager.dart';
-
-import '../model/ClientObject.dart';
-import '../model/ErrorObject.dart';
-import 'ChatWebsocketServer.dart';
+import '../model/ErrorModel.dart';
 import '../../../module/common/enum.dart';
+import 'WebsocketServer.dart';
 
-class WebsocketServerManager extends ChatWebsocketServer {
+class WebsocketServerManager extends WebSocketServer {
   WebsocketServerManager._internal();
   static final WebsocketServerManager _instance =
       WebsocketServerManager._internal();
@@ -17,10 +14,18 @@ class WebsocketServerManager extends ChatWebsocketServer {
     return _instance;
   }
 
-  // 回调函数: 处理当连接中断 参数为中断连接的client信息 this, clientObject
+  // 回调函数: 启动前的初始化工作
+  late Function initial;
+  // 回调函数: 当server绑定ip:port成功后的回调函数
+  late Function whenServerBindAddrSuccess;
+  // 回调函数: 当client连接成功时回调
+  late Function whenClientConnSuccess;
+  // 回调函数: 处理当有client连接中断 参数为中断连接的client信息 this, clientObject
   late Function whenHasClientConnInterrupt;
-  // 回调函数：server异常
+  // 回调函数: 异常处理，具体错误类型见枚举类型
   late Function whenServerError;
+  // 回调函数:消息处理函数
+  late Function handlerMessage;
 
   /*
   配置参数
@@ -31,15 +36,60 @@ class WebsocketServerManager extends ChatWebsocketServer {
       InternetAddress? ip,
       // port端口
       int? port,
-      // 回调函数: 处理当连接中断 参数为中断连接的client信息
+      // 回调函数: 启动前的初始化工作
+      Function? initial,
+      // 回调函数: 当server绑定ip:port成功后的回调函数
+      Function? whenServerBindAddrSuccess,
+      // 回调函数: 当client连接成功时回调
+      Function? whenClientConnSuccess,
+      // 回调函数: 处理当有client连接中断 参数为中断连接的client信息 this, clientObject
       Function? whenHasClientConnInterrupt,
-      // 回调函数：server异常
-      Function? whenServerError}) {
+      // 回调函数: 异常处理，具体错误类型见枚举类型
+      Function? whenServerError,
+      // 回调函数:消息处理函数
+      Function? handlerMessage}) {
     // 初始化参数
     super.ip = ip;
     super.port = port!;
+    // 回调函数
+    this.initial = initial!;
+    this.whenServerBindAddrSuccess = whenServerBindAddrSuccess!;
+    this.whenClientConnSuccess = whenClientConnSuccess!;
     this.whenHasClientConnInterrupt = whenHasClientConnInterrupt!;
     this.whenServerError = whenServerError!;
+    this.handlerMessage = handlerMessage!;
+  }
+
+  /*
+  当server绑定地址成功后调用
+   */
+  @override
+  Future<void> bindAddrSuccesshandler(WebSocketServer webSocketServer) async {
+    super.bindAddrSuccesshandler(webSocketServer);
+
+    this.whenServerBindAddrSuccess(webSocketServer);
+  }
+
+  /*
+  启动前的初始化操作
+   */
+  @override
+  void bootInitial(WebSocketServer webSocketServer) {
+    super.bootInitial(webSocketServer);
+    this.initial(webSocketServer);
+  }
+
+  /*
+  消息处理程序
+   */
+  @override
+  void messageHandler(HttpRequest request, WebSocket webSocket, message) {
+    super.messageHandler(request, webSocket, message);
+
+    // 转为map
+    Map? msgDataTypeMap = stringToMap(message.toString());
+    // 回调
+    this.handlerMessage(request, webSocket, msgDataTypeMap);
   }
 
   /*
@@ -61,28 +111,28 @@ class WebsocketServerManager extends ChatWebsocketServer {
   }
 
   /*
-  重载中断处理方法
+  重载client中断处理方法
    */
   @override
   void interruptHandler(HttpRequest request, WebSocket webSocket) {
-    // 客户端信息
-    var ip = request.connectionInfo?.remoteAddress.address;
-    var port = request.connectionInfo?.remotePort;
-    late ClientObject clientObject;
-    // 更改全局 list 中 websocketClientObj 的状态，并移除具有相同 IP 的对象
-    GlobalManager.onlineClientList.forEach((clientObjectItem) {
-      if (clientObjectItem.ip == ip && clientObjectItem.port == port) {
-        clientObject = clientObjectItem;
-      }
-    });
     // 回调函数调用:this   和 断开的clientObject
-    whenHasClientConnInterrupt(this, clientObject);
+    whenHasClientConnInterrupt(request, webSocket);
     // 执行父
     super.interruptHandler(request, webSocket);
   }
 
-  // 初始化 操作
-  void initialize() {}
+  /*
+  重载当client连接成功时回调
+   */
+  @override
+  handlerClientConnSuccess(HttpRequest request, WebSocket webSocket) {
+    super.handlerClientConnSuccess(request, webSocket);
+
+    // 回调函数
+    this.whenClientConnSuccess(request, webSocket);
+
+    super.handlerClientConnSuccess(request, webSocket);
+  }
 
   // 启动websocketServer
   void boot() {
